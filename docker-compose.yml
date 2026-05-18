@@ -1,0 +1,63 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: domain-monitor-app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - domain-monitor
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: domain-monitor-scheduler
+    working_dir: /var/www/html
+    command: php artisan schedule:work
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - domain-monitor
+
+  postgres:
+    image: postgres:18
+    container_name: domain-monitor-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: domain_monitor
+      POSTGRES_USER: domain_user
+      POSTGRES_PASSWORD: secret
+
+    ports:
+      - "5435:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U domain_user -d domain_monitor" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+    networks:
+      - domain-monitor
+
+volumes:
+  postgres_data:
+
+networks:
+  domain-monitor:
+    driver: bridge

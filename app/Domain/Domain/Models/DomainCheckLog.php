@@ -23,6 +23,6 @@ class DomainCheckLog extends Model
 
     public function domain(): BelongsTo
     {
-        return $this->belongsTo(Domain::class);
+        return $this->belongsTo(Domain::class, 'domain_id');
     }
 }

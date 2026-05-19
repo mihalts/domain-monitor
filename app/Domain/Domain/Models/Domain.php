@@ -32,6 +32,6 @@ class Domain extends Model
 
     public function logs(): HasMany
     {
-        return $this->hasMany(DomainCheckLog::class);
+        return $this->hasMany(DomainCheckLog::class, 'domain_id');
     }
 }

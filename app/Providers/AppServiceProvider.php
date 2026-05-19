@@ -7,6 +7,7 @@ use App\Domain\Domain\Repositories\DomainRepositoryInterface;
 use App\Domain\Domain\Repositories\EloquentDomainCheckLogRepository;
 use App\Domain\Domain\Repositories\EloquentDomainRepository;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,5 +26,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }

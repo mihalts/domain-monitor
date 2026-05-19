@@ -1,7 +1,7 @@
 FROM php:8.3-cli
 
 RUN apt-get update \
-    && apt-get install -y git unzip libpq-dev libzip-dev zip \
+    && apt-get install -y git unzip libpq-dev libzip-dev zip cron \
     && docker-php-ext-install pdo pdo_pgsql pgsql zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -21,7 +21,15 @@ RUN mkdir -p storage/framework/cache \
     bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
+# Laravel scheduler every minute
+RUN echo "* * * * * cd /var/www/html && php artisan schedule:run >> /var/log/cron.log 2>&1" > /etc/cron.d/laravel-cron
+
+RUN chmod 0644 /etc/cron.d/laravel-cron \
+    && crontab /etc/cron.d/laravel-cron
+
 EXPOSE 8000
 
-#CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
-CMD php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
+CMD php artisan config:clear \
+    && php artisan migrate --force \
+    && cron \
+    && php artisan serve --host=0.0.0.0 --port=8000

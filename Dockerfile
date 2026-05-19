@@ -22,14 +22,10 @@ RUN mkdir -p storage/framework/cache \
     && chmod -R 775 storage bootstrap/cache
 
 # Laravel scheduler every minute
-RUN echo "* * * * * cd /var/www/html && php artisan schedule:run >> /var/log/cron.log 2>&1" > /etc/cron.d/laravel-cron
-
-RUN chmod 0644 /etc/cron.d/laravel-cron \
-    && crontab /etc/cron.d/laravel-cron
+RUN echo "* * * * * cd /var/www/html && php artisan schedule:run >> /dev/null 2>&1" > /etc/cron.d/laravel \
+    && chmod 0644 /etc/cron.d/laravel \
+    && crontab /etc/cron.d/laravel
 
 EXPOSE 8000
 
-CMD php artisan config:clear \
-    && php artisan migrate --force \
-    && cron \
-    && php artisan serve --host=0.0.0.0 --port=8000
+CMD cron && php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
